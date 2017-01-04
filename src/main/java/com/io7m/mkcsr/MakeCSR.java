@@ -16,14 +16,11 @@
 
 package com.io7m.mkcsr;
 
-import com.io7m.jlog.Log;
-import com.io7m.jlog.LogPolicyProperties;
-import com.io7m.jlog.LogUsableType;
 import com.io7m.jnull.Nullable;
-import com.io7m.jproperties.JPropertyException;
-import com.io7m.junreachable.UnreachableCodeException;
 import net.java.dev.designgridlayout.DesignGridLayout;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -41,7 +38,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
-import java.util.Properties;
 
 /**
  * The main program.
@@ -50,9 +46,11 @@ import java.util.Properties;
 public final class MakeCSR extends JPanel
 {
   private static final long serialVersionUID;
+  private static final Logger LOG;
 
   static {
     serialVersionUID = -8270459543637058532L;
+    LOG = LoggerFactory.getLogger(MakeCSR.class);
   }
 
   private final JButton ok;
@@ -63,7 +61,6 @@ public final class MakeCSR extends JPanel
   private final StatusPanel status;
 
   private MakeCSR(
-    final LogUsableType log,
     final JFrame window)
     throws IOException
   {
@@ -150,7 +147,7 @@ public final class MakeCSR extends JPanel
           }
         }
 
-        final CSRProgressWindow progress = new CSRProgressWindow(log, d);
+        final CSRProgressWindow progress = new CSRProgressWindow(d);
         progress.addWindowListener(new WindowAdapter()
         {
           @Override
@@ -201,34 +198,22 @@ public final class MakeCSR extends JPanel
   public static void main(
     final String[] args)
   {
-    try {
-      final BouncyCastleProvider provider = new BouncyCastleProvider();
-      Security.addProvider(provider);
+    final BouncyCastleProvider provider = new BouncyCastleProvider();
+    Security.addProvider(provider);
 
-      final Properties props = new Properties();
-      props.setProperty("com.io7m.mkcsr.logs.main", "true");
-      props.setProperty("com.io7m.mkcsr.mkcsr.level", "LOG_DEBUG");
-      final LogUsableType log =
-        Log.newLog(
-          LogPolicyProperties.newPolicy(props, "com.io7m.mkcsr"),
-          "main");
-
-      SwingUtilities.invokeLater(() -> {
-        try {
-          final JFrame window = new JFrame("MakeCSR");
-          final MakeCSR csr = new MakeCSR(log, window);
-          window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-          window.setContentPane(csr);
-          window.pack();
-          window.setVisible(true);
-        } catch (final IOException x) {
-          ErrorBox.showError(log, "I/O error", x);
-          System.exit(1);
-        }
-      });
-    } catch (final JPropertyException e) {
-      throw new UnreachableCodeException(e);
-    }
+    SwingUtilities.invokeLater(() -> {
+      try {
+        final JFrame window = new JFrame("MakeCSR");
+        final MakeCSR csr = new MakeCSR(window);
+        window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        window.setContentPane(csr);
+        window.pack();
+        window.setVisible(true);
+      } catch (final IOException x) {
+        ErrorBox.showError(LOG, "I/O error", x);
+        System.exit(1);
+      }
+    });
   }
 
   private static final class StatusPanel extends JPanel
