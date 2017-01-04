@@ -16,8 +16,8 @@
 
 package com.io7m.mkcsr;
 
-import com.io7m.jlog.LogUsableType;
 import com.io7m.junreachable.UnreachableCodeException;
+import org.slf4j.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -41,7 +41,7 @@ final class ErrorBox
   }
 
   public static void showError(
-    final LogUsableType log,
+    final Logger log,
     final String title,
     final Throwable e)
   {
@@ -95,7 +95,7 @@ final class ErrorBox
   }
 
   public static void showErrorWithoutException(
-    final LogUsableType log,
+    final Logger log,
     final String title,
     final String message)
   {

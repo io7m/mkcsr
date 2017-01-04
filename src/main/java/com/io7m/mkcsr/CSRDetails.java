@@ -23,9 +23,9 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.openssl.PKCS8Generator;
@@ -121,12 +121,13 @@ final class CSRDetails
         keypair.getPublic());
     final ExtensionsGenerator extensions_generator =
       new ExtensionsGenerator();
+
     extensions_generator.addExtension(
-      X509Extension.basicConstraints,
+      Extension.basicConstraints,
       true,
       new BasicConstraints(true));
     extensions_generator.addExtension(
-      X509Extension.keyUsage,
+      Extension.keyUsage,
       true,
       new KeyUsage(KeyUsage.dataEncipherment));
     csr_builder.addAttribute(

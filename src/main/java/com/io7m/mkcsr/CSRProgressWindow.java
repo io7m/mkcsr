@@ -16,10 +16,11 @@
 
 package com.io7m.mkcsr;
 
-import com.io7m.jlog.LogUsableType;
 import com.io7m.jnull.Nullable;
 import net.java.dev.designgridlayout.DesignGridLayout;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -38,16 +39,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class CSRProgressWindow extends JFrame
 {
   private static final long serialVersionUID;
+  private static final Logger LOG;
 
   static {
     serialVersionUID = -5725875455674952427L;
+    LOG = LoggerFactory.getLogger(CSRProgressWindow.class);
   }
 
   private final JTextArea area;
   private final AtomicBoolean done;
 
   CSRProgressWindow(
-    final LogUsableType log,
     final CSRDetails d)
   {
     super("Progress");
@@ -182,7 +184,7 @@ final class CSRProgressWindow extends JFrame
 
         for (final String c : chunks) {
           CSRProgressWindow.this.area.append(c + System.lineSeparator());
-          log.info(c);
+          LOG.info("{}", c);
         }
       }
     };
