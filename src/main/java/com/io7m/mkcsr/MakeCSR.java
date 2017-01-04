@@ -32,6 +32,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -84,16 +86,17 @@ public final class MakeCSR extends JPanel
       final int r = chooser.showOpenDialog(window);
       switch (r) {
         case JFileChooser.APPROVE_OPTION: {
-          MakeCSR.this.outdir.setText(chooser.getSelectedFile().toString());
-          MakeCSR.this.outdir
+          this.outdir.setText(chooser.getSelectedFile().toString());
+          this.outdir
             .setToolTipText(
               "Certificate requests and keys will be written to: "
-                + MakeCSR.this.outdir.getText());
+                + this.outdir.getText());
+
           break;
         }
         case JFileChooser.CANCEL_OPTION: {
-          MakeCSR.this.outdir.setText("");
-          MakeCSR.this.outdir.setToolTipText("No directory selected");
+          this.outdir.setText("");
+          this.outdir.setToolTipText("No directory selected");
           break;
         }
         default: {
@@ -103,67 +106,13 @@ public final class MakeCSR extends JPanel
     });
 
     this.ok = new JButton("OK");
-    this.ok.addActionListener(e -> {
-      MakeCSR.this.ok.setEnabled(false);
+    this.ok.addActionListener(e -> this.onOK(window));
 
-      try {
-        final CSRPassword pass =
-          CSRPassword.fromPasswordFields(
-            MakeCSR.this.password,
-            MakeCSR.this.password_confirm);
-        final CSRUserName name1 =
-          CSRUserName.fromField(MakeCSR.this.common_name);
-        final File file =
-          new File(TextFieldUtilities
-                     .getFieldNonEmptyStringOrError(MakeCSR.this.outdir));
-
-        final CSRDetails d = new CSRDetails(name1, pass, file);
-        MakeCSR.this.status.unsetError();
-
-        final boolean key_exists = d.getPrivateKeyFile().exists();
-        if (key_exists) {
-          final Object[] options = new String[2];
-          options[0] = "Cancel";
-          options[1] = "Overwrite";
-
-          final StringBuilder message = new StringBuilder(128);
-          message.append("Private key ");
-          message.append(d.getPrivateKeyFile());
-          message.append(" already exists, overwrite?");
-
-          final int r =
-            JOptionPane.showOptionDialog(
-              window,
-              message.toString(),
-              "Overwrite?",
-              JOptionPane.YES_NO_OPTION,
-              JOptionPane.QUESTION_MESSAGE,
-              null,
-              options,
-              options[0]);
-          if (r == 0) {
-            MakeCSR.this.ok.setEnabled(true);
-            return;
-          }
-        }
-
-        final CSRProgressWindow progress = new CSRProgressWindow(d);
-        progress.addWindowListener(new WindowAdapter()
-        {
-          @Override
-          public void windowClosing(
-            final @Nullable WindowEvent e)
-          {
-            MakeCSR.this.ok.setEnabled(true);
-          }
-        });
-        progress.pack();
-        progress.setVisible(true);
-
-      } catch (final ValidationProblem x) {
-        MakeCSR.this.status.setError(x);
-      }
-    });
+    final DocumentListener ok_enabler = new OKButtonEnabler();
+    this.password.getDocument().addDocumentListener(ok_enabler);
+    this.password_confirm.getDocument().addDocumentListener(ok_enabler);
+    this.common_name.getDocument().addDocumentListener(ok_enabler);
+    this.outdir.getDocument().addDocumentListener(ok_enabler);
 
     final JLabel version = new JLabel(Version.get());
     version.setForeground(Color.gray);
@@ -187,6 +136,66 @@ public final class MakeCSR extends JPanel
     dg.row().left().add(this.status).fill();
     dg.emptyRow();
     dg.row().left().add(version);
+  }
+
+  private void onOK(final JFrame window)
+  {
+    this.ok.setEnabled(false);
+
+    try {
+      final CSRPassword pass =
+        CSRPassword.fromPasswordFields(this.password, this.password_confirm);
+      final CSRUserName name1 =
+        CSRUserName.fromField(this.common_name);
+      final File file =
+        new File(TextFieldUtilities.getFieldNonEmptyStringOrError(this.outdir));
+
+      final CSRDetails d = new CSRDetails(name1, pass, file);
+      this.status.unsetError();
+
+      final boolean key_exists = d.getPrivateKeyFile().exists();
+      if (key_exists) {
+        final Object[] options = new String[2];
+        options[0] = "Cancel";
+        options[1] = "Overwrite";
+
+        final StringBuilder message = new StringBuilder(128);
+        message.append("Private key ");
+        message.append(d.getPrivateKeyFile());
+        message.append(" already exists, overwrite?");
+
+        final int r =
+          JOptionPane.showOptionDialog(
+            window,
+            message.toString(),
+            "Overwrite?",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[0]);
+        if (r == 0) {
+          this.ok.setEnabled(true);
+          return;
+        }
+      }
+
+      final CSRProgressWindow progress = new CSRProgressWindow(d);
+      progress.addWindowListener(new WindowAdapter()
+      {
+        @Override
+        public void windowClosing(
+          final @Nullable WindowEvent e)
+        {
+          MakeCSR.this.ok.setEnabled(true);
+        }
+      });
+      progress.pack();
+      progress.setVisible(true);
+
+    } catch (final ValidationProblem x) {
+      this.status.setError(x);
+    }
   }
 
   /**
@@ -257,6 +266,38 @@ public final class MakeCSR extends JPanel
     void unsetError()
     {
       this.setVisible(false);
+    }
+  }
+
+  private final class OKButtonEnabler implements DocumentListener
+  {
+    OKButtonEnabler()
+    {
+
+    }
+
+    @Override
+    public void insertUpdate(final DocumentEvent e)
+    {
+      this.enable();
+    }
+
+    @Override
+    public void removeUpdate(final DocumentEvent e)
+    {
+      this.enable();
+    }
+
+    @Override
+    public void changedUpdate(final DocumentEvent e)
+    {
+      this.enable();
+    }
+
+    private void enable()
+    {
+      LOG.trace("re-enabling OK button");
+      MakeCSR.this.ok.setEnabled(true);
     }
   }
 }

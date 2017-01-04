@@ -8,6 +8,12 @@
     <c:item>
       <c:date>2017-01-04</c:date>
       <c:type-code-fix/>
+      <c:ticket>1</c:ticket>
+      <c:summary>Unlock the UI after an invalid username/password/directory has been entered.</c:summary>
+    </c:item>
+    <c:item>
+      <c:date>2017-01-04</c:date>
+      <c:type-code-fix/>
       <c:summary>Switch to using Logback internally instead of the unmaintained jlog.</c:summary>
     </c:item>
     <c:item>
