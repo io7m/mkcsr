@@ -30,9 +30,9 @@ final class CSRUserName
       throw new ValidationProblem(
         "Username must be at least three characters long");
     }
-    if (!name.matches("[A-Za-z0-9_]+")) {
+    if (!name.matches("[A-Za-z0-9_\\-]+")) {
       throw new ValidationProblem(
-        "Username can only contain letters, digits, and underscores");
+        "Username can only contain letters, digits, underscores, and hyphens");
     }
     this.actual = name;
   }
