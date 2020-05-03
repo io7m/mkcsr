@@ -204,7 +204,9 @@ public final class MakeCSR extends JPanel
    * @param args Command line arguments.
    */
 
+  // CHECKSTYLE:OFF
   public static void main(
+    // CHECKSTYLE:ON
     final String[] args)
   {
     final BouncyCastleProvider provider = new BouncyCastleProvider();

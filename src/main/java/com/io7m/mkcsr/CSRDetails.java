@@ -179,7 +179,7 @@ final class CSRDetails
     final PKCS10CertificationRequest csr_actual)
     throws IOException
   {
-    try (final JcaPEMWriter writer = new JcaPEMWriter(new FileWriter(this.csr))) {
+    try (JcaPEMWriter writer = new JcaPEMWriter(new FileWriter(this.csr))) {
       writer.writeObject(csr_actual);
       writer.flush();
     }
@@ -209,7 +209,7 @@ final class CSRDetails
       }
 
       this.hash_value = s.toString();
-      try (final PrintWriter out = new PrintWriter(new FileWriter(this.hash_file))) {
+      try (PrintWriter out = new PrintWriter(new FileWriter(this.hash_file))) {
         out.println(this.hash_value);
         out.flush();
       }

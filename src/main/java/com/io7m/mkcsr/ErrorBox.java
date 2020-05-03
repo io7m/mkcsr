@@ -76,7 +76,7 @@ final class ErrorBox
     final String title,
     final Throwable e)
   {
-    try (final StringWriter writer = new StringWriter()) {
+    try (StringWriter writer = new StringWriter()) {
       writer.append(e.getMessage());
       writer.append(System.lineSeparator());
       writer.append(System.lineSeparator());

@@ -55,43 +55,7 @@ final class CSRProgressWindow extends JFrame
     super("Progress");
     this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-    this.addWindowListener(new WindowAdapter()
-    {
-      @SuppressWarnings("synthetic-access")
-      @Override
-      public void
-      windowClosing(
-        final @Nullable WindowEvent e)
-      {
-        boolean close = false;
-
-        if (!CSRProgressWindow.this.done.get()) {
-          final Object[] options = new String[2];
-          options[0] = "Continue";
-          options[1] = "Stop";
-
-          final int r =
-            JOptionPane.showOptionDialog(
-              CSRProgressWindow.this,
-              "Key and CSR generation is still in progress. Really stop?",
-              "Stop?",
-              JOptionPane.YES_NO_OPTION,
-              JOptionPane.QUESTION_MESSAGE,
-              null,
-              options,
-              options[0]);
-          if (r == 1) {
-            close = true;
-          }
-        } else {
-          close = true;
-        }
-
-        if (close) {
-          CSRProgressWindow.this.dispose();
-        }
-      }
-    });
+    this.addWindowListener(new ClosingWindowAdapter());
 
     this.done = new AtomicBoolean();
     this.area = new JTextArea();
@@ -104,91 +68,144 @@ final class CSRProgressWindow extends JFrame
     final DesignGridLayout dg = new DesignGridLayout(this.getContentPane());
     dg.row().grid().add(scroll);
 
-    final SwingWorker<Void, String> worker = new SwingWorker<Void, String>()
-    {
-      @Override
-      protected
-      @Nullable
-      Void doInBackground()
-        throws Exception
-      {
-        try {
-          this
-            .publish(
-              "Generating private key (can take ~30 seconds on a reasonably fast machine)...");
-          final KeyPair kp = CSRDetails.generateKeyPair();
-
-          this.publish("Encrypting and saving private key to "
-                         + d.getPrivateKeyFile()
-                         + "...");
-          d.writePrivateKey(kp);
-
-          this.publish("Generating certificate signing request...");
-          final PKCS10CertificationRequest csr = d.generateCSR(kp);
-
-          this.publish("Writing certificate signing request to "
-                         + d.getCSRFile()
-                         + "...");
-          d.writeCSR(csr);
-
-          this.publish("Hashing CSR and saving hash to "
-                         + d.getHashFile()
-                         + "...");
-          d.writeCSRHash();
-
-          this.publish("The hash value of your CSR is "
-                         + d.getHashValue()
-                         + ".");
-
-          this.publish("Completed successfully.");
-          CSRProgressWindow.this.done.set(true);
-          return null;
-        } catch (final Exception x) {
-          x.fillInStackTrace();
-          final StringBuilder b = new StringBuilder(128);
-          b.append("Fatal: ");
-
-          while (true) {
-            b.append(x.getMessage());
-            b.append(System.lineSeparator());
-
-            for (final StackTraceElement e : x.getStackTrace()) {
-              b.append(" at ");
-              b.append(e.getClassName());
-              b.append(" ");
-              b.append(e.getFileName());
-              b.append(":");
-              b.append(e.getLineNumber());
-              b.append(System.lineSeparator());
-            }
-            if (x.getCause() != null) {
-              b.append("Caused by:");
-              b.append(System.lineSeparator());
-            } else {
-              break;
-            }
-          }
-
-          this.publish(b.toString());
-          CSRProgressWindow.this.done.set(true);
-          x.printStackTrace();
-          throw x;
-        }
-      }
-
-      @Override
-      protected void process(
-        final @Nullable List<String> chunks)
-      {
-        assert chunks != null;
-
-        for (final String c : chunks) {
-          CSRProgressWindow.this.area.append(c + System.lineSeparator());
-          LOG.info("{}", c);
-        }
-      }
-    };
+    final SwingWorker<Void, String> worker = new GeneratingWorker(d);
 
     worker.execute();
+  }
+
+  private final class GeneratingWorker extends SwingWorker<Void, String>
+  {
+    private final CSRDetails details;
+
+    GeneratingWorker(
+      final CSRDetails inDetails)
+    {
+      this.details = inDetails;
+    }
+
+    @Override
+    protected
+    @Nullable
+    Void doInBackground()
+      throws Exception
+    {
+      try {
+        this
+          .publish(
+            "Generating private key (can take ~30 seconds on a reasonably fast machine)...");
+        final KeyPair kp = CSRDetails.generateKeyPair();
+
+        this.publish("Encrypting and saving private key to "
+                       + this.details.getPrivateKeyFile()
+                       + "...");
+        this.details.writePrivateKey(kp);
+
+        this.publish("Generating certificate signing request...");
+        final PKCS10CertificationRequest csr = this.details.generateCSR(kp);
+
+        this.publish("Writing certificate signing request to "
+                       + this.details.getCSRFile()
+                       + "...");
+        this.details.writeCSR(csr);
+
+        this.publish("Hashing CSR and saving hash to "
+                       + this.details.getHashFile()
+                       + "...");
+        this.details.writeCSRHash();
+
+        this.publish("The hash value of your CSR is "
+                       + this.details.getHashValue()
+                       + ".");
+
+        this.publish("Completed successfully.");
+        CSRProgressWindow.this.done.set(true);
+        return null;
+      } catch (final Exception x) {
+        x.fillInStackTrace();
+        final StringBuilder b = new StringBuilder(128);
+        b.append("Fatal: ");
+
+        while (true) {
+          b.append(x.getMessage());
+          b.append(System.lineSeparator());
+
+          for (final StackTraceElement e : x.getStackTrace()) {
+            b.append(" at ");
+            b.append(e.getClassName());
+            b.append(" ");
+            b.append(e.getFileName());
+            b.append(":");
+            b.append(e.getLineNumber());
+            b.append(System.lineSeparator());
+          }
+          if (x.getCause() != null) {
+            b.append("Caused by:");
+            b.append(System.lineSeparator());
+          } else {
+            break;
+          }
+        }
+
+        this.publish(b.toString());
+        CSRProgressWindow.this.done.set(true);
+        x.printStackTrace();
+        throw x;
+      }
+    }
+
+    @Override
+    protected void process(
+      final @Nullable List<String> chunks)
+    {
+      assert chunks != null;
+
+      for (final String c : chunks) {
+        CSRProgressWindow.this.area.append(c + System.lineSeparator());
+        LOG.info("{}", c);
+      }
+    }
+  }
+
+  private final class ClosingWindowAdapter extends WindowAdapter
+  {
+    ClosingWindowAdapter()
+    {
+
+    }
+
+    @SuppressWarnings("synthetic-access")
+    @Override
+    public void
+    windowClosing(
+      final @Nullable WindowEvent e)
+    {
+      boolean close = false;
+
+      if (!CSRProgressWindow.this.done.get()) {
+        final Object[] options = new String[2];
+        options[0] = "Continue";
+        options[1] = "Stop";
+
+        final int r =
+          JOptionPane.showOptionDialog(
+            CSRProgressWindow.this,
+            "Key and CSR generation is still in progress. Really stop?",
+            "Stop?",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[0]);
+        if (r == 1) {
+          close = true;
+        }
+      } else {
+        close = true;
+      }
+
+      if (close) {
+        CSRProgressWindow.this.dispose();
+      }
+    }
   }
 }
