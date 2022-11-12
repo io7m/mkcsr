@@ -1,9 +1,15 @@
 mkcsr
-=====
+===
 
-[![Travis](https://img.shields.io/travis/io7m/mkcsr.png?style=flat-square)](https://travis-ci.org/io7m/mkcsr)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.io7m.mkcsr/mkcsr/badge.png)](https://maven-badges.herokuapp.com/maven-central/com.io7m.mkcsr/mkcsr)
-[![Maven Central (snapshot)](https://img.shields.io/nexus/s/https/s01.oss.sonatype.org/com.io7m.mkcsr/com.io7m.mkcsr.svg?style=flat-square)](https://s01.oss.sonatype.org/content/repositories/snapshots/com/io7m/mkcsr/)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e59cf36ce0f844d8914206bbe6cfb0ad)](https://www.codacy.com/app/github_79/mkcsr?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=io7m/mkcsr&amp;utm_campaign=Badge_Grade)
+[![Maven Central](https://img.shields.io/maven-central/v/mkcsr/mkcsr.svg?style=flat-square)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22mkcsr%22)
+[![Maven Central (snapshot)](https://img.shields.io/nexus/s/https/s01.oss.sonatype.org/mkcsr/mkcsr.svg?style=flat-square)](https://s01.oss.sonatype.org/content/repositories/snapshots/com/io7m/mkcsr/)
+[![Codecov](https://img.shields.io/codecov/c/github/io7m/mkcsr.svg?style=flat-square)](https://codecov.io/gh/io7m/mkcsr)
 
-![Screenshot](https://raw.githubusercontent.com/io7m/mkcsr/develop/src/site/screenshot.png)
+![mkcsr](./src/site/resources/mkcsr.jpg?raw=true)
+
+| JVM | Platform | Status |
+|-----|----------|--------|
+| OpenJDK (Temurin) Current | Linux | [![Build (OpenJDK (Temurin) Current, Linux)](https://img.shields.io/github/workflow/status/io7m/mkcsr/main.linux.temurin.current)](https://github.com/io7m/mkcsr/actions?query=workflow%3Amain.linux.temurin.current)|
+| OpenJDK (Temurin) LTS | Linux | [![Build (OpenJDK (Temurin) LTS, Linux)](https://img.shields.io/github/workflow/status/io7m/mkcsr/main.linux.temurin.lts)](https://github.com/io7m/mkcsr/actions?query=workflow%3Amain.linux.temurin.lts)|
+| OpenJDK (Temurin) Current | Windows | [![Build (OpenJDK (Temurin) Current, Windows)](https://img.shields.io/github/workflow/status/io7m/mkcsr/main.windows.temurin.current)](https://github.com/io7m/mkcsr/actions?query=workflow%3Amain.windows.temurin.current)|
+| OpenJDK (Temurin) LTS | Windows | [![Build (OpenJDK (Temurin) LTS, Windows)](https://img.shields.io/github/workflow/status/io7m/mkcsr/main.windows.temurin.lts)](https://github.com/io7m/mkcsr/actions?query=workflow%3Amain.windows.temurin.lts)|
